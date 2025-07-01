@@ -2,22 +2,26 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>LattéLink Customer Login</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>LattéLink Check-In</title>
   <style>
     body {
       font-family: sans-serif;
-      background: #fdf6f0;
       display: flex;
       flex-direction: column;
       align-items: center;
-      padding: 40px;
-      color: #3d2b1f;
+      padding-top: 50px;
+      background-color: #fdf6f0;
+      color: #333;
+    }
+    h1 {
+      margin-bottom: 20px;
+      color: #473324;
     }
     input, button {
       font-size: 1rem;
       padding: 10px;
-      margin: 10px 0;
+      margin: 10px;
       width: 280px;
       border-radius: 6px;
       border: 1px solid #ccc;
@@ -28,64 +32,60 @@
       border: none;
       cursor: pointer;
     }
-    button:hover {
-      background-color: #8b5e3c;
-    }
     #message {
-      margin-top: 20px;
+      margin-top: 30px;
       font-weight: bold;
-      text-align: center;
+      color: #473324;
     }
   </style>
 </head>
 <body>
-  <h1>☕ LattéLink Check-In</h1>
-  <p>Enter your phone/email and the staff code</p>
 
-  <input type="text" id="userId" placeholder="Phone or Email" />
-  <input type="text" id="staffPin" placeholder="Staff code" />
+  <h1>LattéLink</h1>
+  <p>Check in to track your coffee rewards</p>
+
+  <input type="text" id="userId" placeholder="Enter phone number or email" />
+  <input type="text" id="staffPin" placeholder="Ask staff for 6-digit PIN" />
   <button onclick="submitForm()">Check In</button>
 
   <div id="message"></div>
 
   <script>
-    const deploymentUrl = https://script.google.com/macros/s/AKfycbyTiWkJIL-6pjiaB9Z2xlUU70k7zMvZA-DvORobbCKz8FSGjKU7Lb6iAPvJ7jhZ4SQpLw/exec
+    const backendUrl = "https://script.google.com/macros/s/AKfycbx6n7yLCWJeF1DQY9187HamVjCm5kRNu3cymLSHE03RALQQ_RZsETX-iOTJxuDaNJN3/exec";
 
-    async function checkIn() {
+    async function submitForm() {
       const userId = document.getElementById('userId').value.trim();
       const pin = document.getElementById('staffPin').value.trim();
       const messageDiv = document.getElementById('message');
 
       if (!userId || !pin) {
-        messageDiv.textContent = 'Please enter both fields.';
+        messageDiv.innerText = "Please enter both your ID and the staff PIN.";
         return;
       }
 
-      messageDiv.textContent = 'Checking in...';
+      messageDiv.innerText = "Checking in...";
 
       try {
-        const response = await fetch(deploymentUrl, {
-          method: 'POST',
-          headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+        const response = await fetch(backendUrl, {
+          method: "POST",
+          headers: { "Content-Type": "application/x-www-form-urlencoded" },
           body: `id=${encodeURIComponent(userId)}&pin=${encodeURIComponent(pin)}`
         });
 
-        const data = await response.json();
+        const result = await response.json();
 
-        if (data.error) {
-          messageDiv.textContent = `❌ ${data.error}`;
+        if (result.error) {
+          messageDiv.innerText = "❌ " + result.error;
         } else {
-          const remaining = 10 - data.coffees;
-          if (remaining <= 0) {
-            messageDiv.textContent = `🎉 You earned a FREE coffee! Enjoy!`;
-          } else {
-            messageDiv.textContent = `✅ You have ${data.coffees} coffee${data.coffees === 1 ? '' : 's'} — only ${remaining} more to go!`;
-          }
+          messageDiv.innerText = `✅ ${result.message} (Total: ${result.coffees} coffee${result.coffees === 1 ? "" : "s"})`;
         }
-      } catch (err) {
-        messageDiv.textContent = 'Error connecting to server.';
+
+      } catch (error) {
+        messageDiv.innerText = "🚨 Connection error: " + error.message;
+        console.error(error);
       }
     }
   </script>
+
 </body>
 </html>
