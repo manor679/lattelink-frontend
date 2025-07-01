@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>LattéLink Customer Login</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      background: #fdf6f0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 40px;
+      color: #3d2b1f;
+    }
+    input, button {
+      font-size: 1rem;
+      padding: 10px;
+      margin: 10px 0;
+      width: 280px;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+    }
+    button {
+      background-color: #a67c52;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #8b5e3c;
+    }
+    #message {
+      margin-top: 20px;
+      font-weight: bold;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <h1>☕ LattéLink Check-In</h1>
+  <p>Enter your phone/email and the staff code</p>
+
+  <input type="text" id="userId" placeholder="Phone or Email" />
+  <input type="text" id="staffPin" placeholder="Staff code" />
+  <button onclick="checkIn()">Check In</button>
+
+  <div id="message"></div>
+
+  <script>
+    const deploymentUrl = https://script.google.com/macros/s/AKfycbyTiWkJIL-6pjiaB9Z2xlUU70k7zMvZA-DvORobbCKz8FSGjKU7Lb6iAPvJ7jhZ4SQpLw/exec
+
+    async function checkIn() {
+      const userId = document.getElementById('userId').value.trim();
+      const pin = document.getElementById('staffPin').value.trim();
+      const messageDiv = document.getElementById('message');
+
+      if (!userId || !pin) {
+        messageDiv.textContent = 'Please enter both fields.';
+        return;
+      }
+
+      messageDiv.textContent = 'Checking in...';
+
+      try {
+        const response = await fetch(deploymentUrl, {
+          method: 'POST',
+          headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+          body: `id=${encodeURIComponent(userId)}&pin=${encodeURIComponent(pin)}`
+        });
+
+        const data = await response.json();
+
+        if (data.error) {
+          messageDiv.textContent = `❌ ${data.error}`;
+        } else {
+          const remaining = 10 - data.coffees;
+          if (remaining <= 0) {
+            messageDiv.textContent = `🎉 You earned a FREE coffee! Enjoy!`;
+          } else {
+            messageDiv.textContent = `✅ You have ${data.coffees} coffee${data.coffees === 1 ? '' : 's'} — only ${remaining} more to go!`;
+          }
+        }
+      } catch (err) {
+        messageDiv.textContent = 'Error connecting to server.';
+      }
+    }
+  </script>
+</body>
+</html>
