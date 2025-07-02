@@ -1,21 +1,28 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>LattéLink Check-In</title>
-  <script src="https://cdn.jsdelivr.net/npm/jsotp/lib/jsotp.min.js"></script>
   <style>
     body {
       font-family: sans-serif;
-      background: #fefbf8;
-      text-align: center;
-      padding-top: 80px;
-      color: #3e2c23;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding-top: 50px;
+      background-color: #fff7f0;
+      color: #333;
+    }
+    h1 {
+      margin-bottom: 20px;
+      color: #6b4e2e;
     }
     input, button {
-      padding: 12px;
       font-size: 1rem;
-      width: 280px;
+      padding: 10px;
       margin: 10px;
+      width: 280px;
       border-radius: 6px;
       border: 1px solid #ccc;
     }
@@ -28,49 +35,54 @@
     #message {
       margin-top: 30px;
       font-weight: bold;
+      color: #6b4e2e;
     }
   </style>
 </head>
 <body>
 
-  <h1>LattéLink Check-In</h1>
-  <p>Enter your phone or email and ask staff for today’s code</p>
+  <h1>LattéLink</h1>
+  <p>Check in to track your coffee rewards</p>
 
-  <input type="text" id="userId" placeholder="Your phone or email" />
-  <input type="text" id="staffCode" placeholder="Staff code (ask them!)" />
-  <button onclick="submit()">Check In</button>
+  <input type="text" id="userId" placeholder="Enter phone number or email" />
+  <input type="text" id="staffPin" placeholder="Ask staff for 6-digit PIN" />
+  <button onclick="submitForm()">Check In</button>
 
   <div id="message"></div>
 
   <script>
-    const secret = 'JBSWY3DPEHPK3PXP'; // same as the one on the staff page
-    const totp = new jsOTP.totp();
+    const backendUrl = "https://script.google.com/macros/s/AKfycbya2Ifeb80ov_-uyq8JG8i2b0tf3YRv36x57vPWBTY6-hirc-O8GvanDTt5Xkfzzv3feQ/exec"; // YOUR DEPLOYMENT URL
 
-    async function submit() {
+    async function submitForm() {
       const userId = document.getElementById('userId').value.trim();
-      const code = document.getElementById('staffCode').value.trim();
-      const correctCode = totp.getOtp(secret);
-      const msg = document.getElementById('message');
+      const pin = document.getElementById('staffPin').value.trim();
+      const messageDiv = document.getElementById('message');
 
-      if (!userId || !code) {
-        msg.innerText = "❌ Please fill in both fields.";
+      if (!userId || !pin) {
+        messageDiv.innerText = "Please enter both your ID and the staff PIN.";
         return;
       }
 
-      if (code !== correctCode) {
-        msg.innerText = "❌ Incorrect staff code. Try again.";
-        return;
-      }
-
-      msg.innerText = "⏳ Checking in...";
+      messageDiv.innerText = "Checking in...";
 
       try {
-        const res = await fetch(`https://script.google.com/macros/s/AKfycbxa73hJi7qHZJyDdx2X2MRrh1qQke_7CbkLJub7kg2h5IzkpAbQfhSbcsx0OvtwgZE/exec?id=${encodeURIComponent(userId)}`);
-        const data = await res.json();
-        msg.innerText = data.message;
-      } catch (err) {
-        msg.innerText = "⚠️ Error checking in. Try again later.";
-        console.error(err);
+        const response = await fetch(backendUrl, {
+          method: "POST",
+          headers: { "Content-Type": "application/x-www-form-urlencoded" },
+          body: `id=${encodeURIComponent(userId)}&pin=${encodeURIComponent(pin)}`
+        });
+
+        const result = await response.json();
+
+        if (result.error) {
+          messageDiv.innerText = "❌ " + result.error;
+        } else {
+          messageDiv.innerText = `✅ ${result.message} (You have ${result.coffees} coffee${result.coffees === 1 ? "" : "s"})`;
+        }
+
+      } catch (error) {
+        messageDiv.innerText = "🚨 Connection error: " + error.message;
+        console.error(error);
       }
     }
   </script>
