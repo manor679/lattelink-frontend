@@ -2,7 +2,6 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>LattéLink Check-In</title>
   <style>
     body {
@@ -11,12 +10,12 @@
       flex-direction: column;
       align-items: center;
       padding-top: 50px;
-      background-color: #fff7f0;
+      background-color: #fdf6f0;
       color: #333;
     }
     h1 {
       margin-bottom: 20px;
-      color: #6b4e2e;
+      color: #473324;
     }
     input, button {
       font-size: 1rem;
@@ -35,14 +34,14 @@
     #message {
       margin-top: 30px;
       font-weight: bold;
-      color: #6b4e2e;
+      color: #473324;
     }
   </style>
 </head>
 <body>
 
   <h1>LattéLink</h1>
-  <p>Check in to track your coffee rewards</p>
+  <p>Enter your email or phone and ask staff for the 6-digit code</p>
 
   <input type="text" id="userId" placeholder="Enter phone number or email" />
   <input type="text" id="staffPin" placeholder="Ask staff for 6-digit PIN" />
@@ -51,7 +50,7 @@
   <div id="message"></div>
 
   <script>
-    const backendUrl = "https://script.google.com/macros/s/AKfycbya2Ifeb80ov_-uyq8JG8i2b0tf3YRv36x57vPWBTY6-hirc-O8GvanDTt5Xkfzzv3feQ/exec"; // YOUR DEPLOYMENT URL
+    const backendUrl = "https://script.google.com/macros/s/AKfycbzZCbg5FjW_T_TxEQPuwVqdwc9fnKNkde1gr51eOz0aGGUe6hSeRfD4lz-mtIn1cIjkjg/exec";
 
     async function submitForm() {
       const userId = document.getElementById('userId').value.trim();
@@ -77,7 +76,7 @@
         if (result.error) {
           messageDiv.innerText = "❌ " + result.error;
         } else {
-          messageDiv.innerText = `✅ ${result.message} (You have ${result.coffees} coffee${result.coffees === 1 ? "" : "s"})`;
+          messageDiv.innerText = `✅ ${result.message} (Total: ${result.coffees} coffee${result.coffees === 1 ? "" : "s"})`;
         }
 
       } catch (error) {
